@@ -1,31 +1,31 @@
-name: Deploy to DCP Free VM
+name: Deploy to GCP VM
 
 on:
   push:
     branches:
-      - main # runs on every push to main branch
+      - main # Trigger deployment on push to main
 
 jobs:
-  Deploy:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH Key
+      - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy to GCP VM
+      - name: Deploy via SSH
         run: |
-          echo "Deploying to ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}"
           ssh -i ~/.ssh/id_ed25519 "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" << 'EOF'
-            cd /home/${{secrets.SSH_USER}}/auth-onboarding
-            git pull
-            npm install
+            cd /home/${{ secrets.SSH_USER }}/my-next-app
+            git pull origin main
+            npm install --omit=dev
             npm run build
-            pm2 restart auth-onboarding
+            pm2 restart my-next-app || pm2 start npm --name "my-next-app" -- start
           EOF
