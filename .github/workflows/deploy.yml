@@ -1,0 +1,30 @@
+name: Deploy to DCP Free VM
+
+on:
+  push:
+    branches:
+      - main # runs on every push to main branch
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan "${{ secrets.SSH_HOST }}}" >> ~/.ssh/known_hosts
+
+      - name: Deploy to GCP VM
+        run: |
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" << 'EOF'
+            cd /home/${{secrets.SSH_USER}}/auth-onboarding
+            git pull
+            npm install
+            npm run build
+            pm2 restart auth-onboarding
+          EOF
