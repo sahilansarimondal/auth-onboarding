@@ -27,7 +27,7 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             cd /home/${{ secrets.SSH_USER }}/auth-onboarding
             git pull origin main
-            npm install --omit=dev
+            npm install 
             npm run build
             pm2 restart auth-onboarding || pm2 start npm --name "auth-onboarding" -- start
           EOF
