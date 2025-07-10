@@ -23,9 +23,9 @@ jobs:
       - name: Deploy via SSH
         run: |
           ssh -i ~/.ssh/id_ed25519 "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" << 'EOF'
-            cd /home/${{ secrets.SSH_USER }}/my-next-app
+            cd /home/${{ secrets.SSH_USER }}/auth-onboarding
             git pull origin main
             npm install --omit=dev
             npm run build
-            pm2 restart my-next-app || pm2 start npm --name "my-next-app" -- start
+            pm2 restart auth-onboarding || pm2 start npm --name "auth-onboarding" -- start
           EOF
